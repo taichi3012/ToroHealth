@@ -12,6 +12,7 @@ import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
@@ -222,13 +223,14 @@ public class GuiEntityStatus extends Gui {
 
 		Gui.drawModalRectWithCustomSizedTexture(screenX + healthBarX, screenY + healthBarY, 0.0f, 150.0f, 96, 16, 200.0f, 200.0f);
 
-		int currentHealthWidth = (int) Math.ceil(96 * (entity.getHealth() / entity.getMaxHealth()));
+		double maxHealth = entity.getEntityAttribute(SharedMonsterAttributes.maxHealth).getBaseValue();
+		int currentHealthWidth = (int) Math.ceil(96 * (entity.getHealth() / maxHealth));
 		Gui.drawModalRectWithCustomSizedTexture(screenX + healthBarX, screenY + healthBarY, 0.0f, 100.0f, currentHealthWidth, 16, 200.0f, 200.0f);
 
 		String name = getDisplayName();
 
 		drawCenteredString(mc.fontRendererObj, name, screenX + nameX, screenY + nameY, 0xFFFFFF);
-		drawCenteredString(mc.fontRendererObj, (int) Math.ceil(entity.getHealth()) + "/" + (int) entity.getMaxHealth(), screenX + healthX, screenY + healthY, 0xFFFFFF);
+		drawCenteredString(mc.fontRendererObj, (int) Math.ceil(entity.getHealth()) + "/" + (int) maxHealth, screenX + healthX, screenY + healthY, 0xFFFFFF);
 	}
 
 	private void drawHeartsDisplay() {
