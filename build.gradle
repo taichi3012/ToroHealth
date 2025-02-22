@@ -1,42 +1,58 @@
 buildscript {
-    repositories {
-        jcenter()
-        maven {
-            name = "forge"
-            url = "http://files.minecraftforge.net/maven"
-        }
+  repositories {
+    mavenCentral()
+    maven {
+      name = 'forge'
+      url = 'https://maven.minecraftforge.net/'
     }
-    dependencies {
-        classpath 'net.minecraftforge.gradle:ForgeGradle:2.1-SNAPSHOT'
-    }
+  }
+  dependencies {
+    classpath 'net.minecraftforge.gradle:ForgeGradle:2.1-SNAPSHOT'
+  }
 }
 apply plugin: 'net.minecraftforge.gradle.forge'
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
+tasks.withType(JavaCompile).configureEach {
+  options.encoding = 'UTF-8'
+}
+
 version = "1.8.9-7"
-group= "net.torocraft.torohealth"
+group = "net.torocraft.torohealth"
 archivesBaseName = "torohealth"
 
 minecraft {
-    version = "1.8.9-11.15.1.1722"
-    runDir = "run"
-    mappings = "stable_20"
-}
-
-dependencies {
-    
+  version = '1.8.9-11.15.1.2318-1.8.9'
+  runDir = 'run'
+  mappings = 'stable_20'
 }
 
 processResources {
-    inputs.property "version", project.version
-    inputs.property "mcversion", project.minecraft.version
-    from(sourceSets.main.resources.srcDirs) {
-        include 'mcmod.info'
-        expand 'version':project.version, 'mcversion':project.minecraft.version
+  inputs.property 'version', project.version
+  inputs.property 'mcversion', project.minecraft.version
+
+  from(sourceSets.main.resources.srcDirs) {
+    include 'mcmod.info'
+    expand 'version': project.version, 'mcversion': project.minecraft.version
+
+    //'%`'と'`%'で囲まれた部分をUnicodeエスケープシーケンスに変換(日本語の文字化け対策)
+    filter { String line ->
+      line.replaceAll(/%`.*?`%/) { String[] match ->
+        match[0].replaceAll(/^%`|`%$/, '')
+          .toCharArray()
+          .collect { '\\u' + Integer.toHexString((int) it.charValue()).padLeft(4, '0') }
+          .join()
+      }
     }
-    from(sourceSets.main.resources.srcDirs) {
-        exclude 'mcmod.info'
-    }
+  }
+
+  from(sourceSets.main.resources.srcDirs) {
+    exclude 'mcmod.info'
+  }
+}
+
+runClient {
+  outputs.upToDateWhen { false }
 }
