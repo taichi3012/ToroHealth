@@ -25,7 +25,7 @@ public class GuiEntityStatus extends Gui {
 
   private Minecraft mc;
   private EntityLivingBase entity;
-  private int age = 0;
+  private long entityUpdatedTime;
   private boolean showHealthBar = false;
 
   private ScaledResolution viewport;
@@ -65,7 +65,7 @@ public class GuiEntityStatus extends Gui {
 
   public void setEntity(EntityLivingBase entityToTrack) {
     showHealthBar();
-    age = 0;
+    entityUpdatedTime = System.currentTimeMillis();
     if (entity != null && entity.getUniqueID().equals(entityToTrack.getUniqueID())) {
       return;
     }
@@ -73,18 +73,17 @@ public class GuiEntityStatus extends Gui {
   }
 
   @SubscribeEvent
-  public void drawHealthBar(RenderGameOverlayEvent event) {
+  public void drawHealthBar(RenderGameOverlayEvent.Post event) {
+    if (event.type != ElementType.ALL) {
+      return;
+    }
+
     if (!showHealthBar) {
       return;
     }
     String entityStatusDisplay = ConfigurationHandler.entityStatusDisplay;
-    age++;
-    if (age > ConfigurationHandler.hideDelay || entityStatusDisplay.equals("OFF")) {
+    if (System.currentTimeMillis() - entityUpdatedTime > ConfigurationHandler.hideDelay || entityStatusDisplay.equals("OFF")) {
       hideHealthBar();
-    }
-
-    if (event.isCancelable() || event.type != ElementType.EXPERIENCE) {
-      return;
     }
 
     boolean showEntityModel = ConfigurationHandler.showEntityModel;
