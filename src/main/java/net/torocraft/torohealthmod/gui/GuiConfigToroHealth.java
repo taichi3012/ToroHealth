@@ -9,12 +9,12 @@ import net.torocraft.torohealthmod.config.ConfigurationHandler;
 
 public class GuiConfigToroHealth extends GuiConfig {
 
-	public GuiConfigToroHealth(GuiScreen parent) {
-		super (parent, new ConfigElement(ConfigurationHandler.config.getCategory(Configuration.CATEGORY_CLIENT)).getChildElements(),
-				ToroHealthMod.MODID,
-				false,
-				false,
-				"ToroHealth");
-		titleLine2 = ConfigurationHandler.config.getConfigFile().getAbsolutePath();
-	}
+  public GuiConfigToroHealth(GuiScreen parent) {
+    super(parent, new ConfigElement(ConfigurationHandler.config.getCategory(Configuration.CATEGORY_CLIENT)).getChildElements(),
+      ToroHealthMod.MODID,
+      false,
+      false,
+      "ToroHealth");
+    titleLine2 = ConfigurationHandler.config.getConfigFile().getAbsolutePath();
+  }
 }
