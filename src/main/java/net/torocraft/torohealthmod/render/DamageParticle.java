@@ -44,13 +44,13 @@ public class DamageParticle extends EntityFX {
   }
 
   @Override
-  public void renderParticle(WorldRenderer worldRendererIn, final Entity entity, final float x, final float y, final float z, final float dX, final float dY, final float dZ) {
+  public void renderParticle(WorldRenderer worldRendererIn, Entity entityIn, float partialTicks, float rotationX, float rotationZ, float rotationYZ, float rotationXY, float rotationXZ) {
     float rotationYaw = (-Minecraft.getMinecraft().thePlayer.rotationYaw);
     float rotationPitch = Minecraft.getMinecraft().thePlayer.rotationPitch;
 
-    final float locX = ((float) (this.prevPosX + (this.posX - this.prevPosX) * x - interpPosX));
-    final float locY = ((float) (this.prevPosY + (this.posY - this.prevPosY) * y - interpPosY));
-    final float locZ = ((float) (this.prevPosZ + (this.posZ - this.prevPosZ) * z - interpPosZ));
+    final float locX = ((float) (this.prevPosX + (this.posX - this.prevPosX) * partialTicks - interpPosX));
+    final float locY = ((float) (this.prevPosY + (this.posY - this.prevPosY) * partialTicks - interpPosY));
+    final float locZ = ((float) (this.prevPosZ + (this.posZ - this.prevPosZ) * partialTicks - interpPosZ));
 
     GL11.glPushMatrix();
     if (this.shouldOnTop) {
