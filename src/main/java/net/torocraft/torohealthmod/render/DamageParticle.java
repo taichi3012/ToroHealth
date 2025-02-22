@@ -54,9 +54,9 @@ public class DamageParticle extends EntityFX {
 
     GL11.glPushMatrix();
     if (this.shouldOnTop) {
-      GL11.glDepthFunc(519);
+      GL11.glDepthFunc(GL11.GL_ALWAYS);
     } else {
-      GL11.glDepthFunc(515);
+      GL11.glDepthFunc(GL11.GL_LEQUAL);
     }
     GL11.glTranslatef(locX, locY, locZ);
     GL11.glRotatef(rotationYaw, 0.0F, 1.0F, 0.0F);
@@ -67,16 +67,16 @@ public class DamageParticle extends EntityFX {
     GL11.glScaled(this.scale, this.scale, this.scale);
 
     OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, 240.0F, 0.003662109F);
-    GL11.glEnable(3553);
-    GL11.glDisable(3042);
+    GL11.glEnable(GL11.GL_TEXTURE_2D);
+    GL11.glDisable(GL11.GL_BLEND);
     GL11.glDepthMask(true);
     GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
-    GL11.glEnable(3553);
-    GL11.glEnable(2929);
-    GL11.glDisable(2896);
-    GL11.glBlendFunc(770, 771);
-    GL11.glEnable(3042);
-    GL11.glEnable(3008);
+    GL11.glEnable(GL11.GL_TEXTURE_2D);
+    GL11.glEnable(GL11.GL_DEPTH_TEST);
+    GL11.glDisable(GL11.GL_LIGHTING);
+    GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+    GL11.glEnable(GL11.GL_BLEND);
+    GL11.glEnable(GL11.GL_ALPHA_TEST);
     GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
 
     int color = ConfigurationHandler.damageColor;
@@ -88,7 +88,7 @@ public class DamageParticle extends EntityFX {
     fontRenderer.drawStringWithShadow(this.text, -MathHelper.floor_float(fontRenderer.getStringWidth(this.text) / 2.0F) + 1, -MathHelper.floor_float(fontRenderer.FONT_HEIGHT / 2.0F) + 1, color);
 
     GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
-    GL11.glDepthFunc(515);
+    GL11.glDepthFunc(GL11.GL_LEQUAL);
 
     GL11.glPopMatrix();
     if (this.grow) {
