@@ -1,15 +1,11 @@
 package net.torocraft.torohealthmod;
 
-import java.util.List;
-
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.item.EntityItemFrame;
 import net.minecraft.nbt.NBTTagInt;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.BlockPos;
-import net.minecraft.util.EntitySelectors;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.util.Vec3;
 import net.minecraft.world.World;
@@ -25,7 +21,6 @@ public class ClientProxy extends CommonProxy {
 
   GuiEntityStatus entityStatusGUI;
   private Minecraft mc = Minecraft.getMinecraft();
-  private Entity pointedEntity;
 
   @Override
   public void preInit(FMLPreInitializationEvent e) {
@@ -83,84 +78,60 @@ public class ClientProxy extends CommonProxy {
   }
 
   @Override
-  public void setEntityInCrosshairs() {
-    MovingObjectPosition r = getMouseOver(1.0f);
-    if (r != null && MovingObjectPosition.MovingObjectType.ENTITY.equals(r.typeOfHit)) {
-      if (r.entityHit instanceof EntityLivingBase) {
-        entityStatusGUI.setEntity((EntityLivingBase) r.entityHit);
-      }
+  public void setEntityInCrosshairs(float partialTicks) {
+    EntityLivingBase hit = getPointedEntity(partialTicks);
+    if (hit != null) {
+      entityStatusGUI.setEntity(hit);
     }
   }
 
-  public MovingObjectPosition getMouseOver(float partialTicks) {
+  private EntityLivingBase getPointedEntity(float partialTicks) {
     Entity observer = this.mc.getRenderViewEntity();
-
-    MovingObjectPosition objectMouseOver = null;
-
     if (observer == null || this.mc.theWorld == null) {
       return null;
     }
 
-    this.mc.pointedEntity = null;
-    double reachDistance = 50d;
-    objectMouseOver = observer.rayTrace(reachDistance, partialTicks);
-    double d1 = reachDistance;
-    Vec3 vec3 = observer.getPositionEyes(partialTicks);
-    boolean outOfReach = false;
-    int i = 3;
-
+    double reach = 50d;
+    Vec3 positionEyes = observer.getPositionEyes(partialTicks);
+    MovingObjectPosition objectMouseOver = observer.rayTrace(reach, partialTicks);
     if (objectMouseOver != null) {
-      d1 = objectMouseOver.hitVec.distanceTo(vec3);
+      reach = objectMouseOver.hitVec.distanceTo(positionEyes);
     }
 
-    Vec3 vec31 = observer.getLook(partialTicks);
-    Vec3 vec32 = vec3.addVector(vec31.xCoord * reachDistance, vec31.yCoord * reachDistance, vec31.zCoord * reachDistance);
-    this.pointedEntity = null;
-    Vec3 vec33 = null;
-    float f = 1.0F;
-    List<Entity> list = this.mc.theWorld.getEntitiesInAABBexcluding(observer,
-      observer.getEntityBoundingBox().addCoord(vec31.xCoord * reachDistance, vec31.yCoord * reachDistance, vec31.zCoord * reachDistance).expand((double) f, (double) f, (double) f), EntitySelectors.NOT_SPECTATING);
-    double d2 = d1;
+    Vec3 positionPointed = positionEyes.add(mulScalar(observer.getLook(partialTicks), reach));
+    AxisAlignedBB box = new AxisAlignedBB(
+      positionEyes.xCoord, positionEyes.yCoord, positionEyes.zCoord,
+      positionPointed.xCoord, positionPointed.yCoord, positionPointed.zCoord
+    );
 
-    for (int j = 0; j < list.size(); ++j) {
-      Entity entity1 = (Entity) list.get(j);
-      float f1 = entity1.getCollisionBorderSize();
-      AxisAlignedBB axisalignedbb = entity1.getEntityBoundingBox().expand((double) f1, (double) f1, (double) f1);
-      MovingObjectPosition movingobjectposition = axisalignedbb.calculateIntercept(vec3, vec32);
+    double nearlest = reach;
+    EntityLivingBase result = null;
+    for (EntityLivingBase entity : this.mc.theWorld.getEntitiesWithinAABB(EntityLivingBase.class, box)) {
+      if (entity == observer) {
+        continue;
+      }
 
-      if (axisalignedbb.isVecInside(vec3)) {
-        if (d2 >= 0.0D) {
-          this.pointedEntity = entity1;
-          vec33 = movingobjectposition == null ? vec3 : movingobjectposition.hitVec;
-          d2 = 0.0D;
-        }
-      } else if (movingobjectposition != null) {
-        double d3 = vec3.distanceTo(movingobjectposition.hitVec);
+      float borderSize = entity.getCollisionBorderSize();
+      AxisAlignedBB axisalignedbb = entity.getEntityBoundingBox().expand(borderSize, borderSize, borderSize);
+      if (axisalignedbb.isVecInside(positionEyes)) {
+        return entity;
+      }
 
-        if (d3 < d2 || d2 == 0.0D) {
-          if (entity1 == observer.ridingEntity && !observer.canRiderInteract()) {
-            if (d2 == 0.0D) {
-              this.pointedEntity = entity1;
-              vec33 = movingobjectposition.hitVec;
-            }
-          } else {
-            this.pointedEntity = entity1;
-            vec33 = movingobjectposition.hitVec;
-            d2 = d3;
-          }
+      MovingObjectPosition movingObjectPosition = axisalignedbb.calculateIntercept(positionEyes, positionPointed);
+      if (movingObjectPosition != null) {
+        double distance = positionEyes.distanceTo(movingObjectPosition.hitVec);
+        if (distance < nearlest) {
+          result = entity;
+          nearlest = distance;
         }
       }
     }
 
-    if (this.pointedEntity != null && (d2 < d1 || this.mc.objectMouseOver == null)) {
-      objectMouseOver = new MovingObjectPosition(this.pointedEntity, vec33);
+    return result;
+  }
 
-      if (this.pointedEntity instanceof EntityLivingBase || this.pointedEntity instanceof EntityItemFrame) {
-        this.mc.pointedEntity = this.pointedEntity;
-      }
-    }
-
-    return objectMouseOver;
+  private Vec3 mulScalar(Vec3 vec, double a) {
+    return new Vec3(vec.xCoord * a, vec.yCoord * a, vec.zCoord * a);
   }
 
   private boolean isSolidBlock(BlockPos pos, BlockPos prevPos) {

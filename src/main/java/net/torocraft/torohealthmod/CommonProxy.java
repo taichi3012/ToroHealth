@@ -22,7 +22,7 @@ public class CommonProxy {
 
   }
 
-  public void setEntityInCrosshairs() {
+  public void setEntityInCrosshairs(float partialTicks) {
 
   }
 }

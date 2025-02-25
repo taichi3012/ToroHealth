@@ -14,7 +14,7 @@ public class Events {
 
   @SubscribeEvent
   public void displayEntityStatus(RenderGameOverlayEvent.Pre event) {
-    ToroHealthMod.proxy.setEntityInCrosshairs();
+    ToroHealthMod.proxy.setEntityInCrosshairs(event.partialTicks);
   }
 
 }
