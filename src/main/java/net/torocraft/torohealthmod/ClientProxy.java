@@ -14,12 +14,15 @@ import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.torocraft.torohealthmod.config.ConfigurationHandler;
 import net.torocraft.torohealthmod.gui.GuiEntityStatus;
 import net.torocraft.torohealthmod.render.DamageParticle;
+import org.apache.commons.lang3.tuple.Pair;
 
 public class ClientProxy extends CommonProxy {
 
   GuiEntityStatus entityStatusGUI;
   private Minecraft mc = Minecraft.getMinecraft();
   private final Map<EntityLivingBase, Float> healthMap = new WeakHashMap<>();
+  private final Map<EntityLivingBase, Pair<Long, Float>> AccumulatedDamage = new WeakHashMap<>();
+  private EntityLivingBase pointedEntity;
 
   @Override
   public void preInit(FMLPreInitializationEvent e) {
@@ -61,6 +64,18 @@ public class ClientProxy extends CommonProxy {
 
     displayParticle(entity, MathHelper.ceiling_float_int(prevHealth - currentHealth));
     healthMap.put(entity, currentHealth);
+    if (entity == pointedEntity) {
+      entityStatusGUI.setEntity(entity);
+    }
+
+    Pair<Long, Float> pair = AccumulatedDamage.get(entity);
+    long time = System.currentTimeMillis();
+    if (pair == null || time - pair.getLeft() > ConfigurationHandler.hideDelay) {
+      AccumulatedDamage.put(entity, Pair.of(time, prevHealth));
+      return;
+    }
+
+    AccumulatedDamage.put(entity, Pair.of(time, pair.getRight()));
   }
 
   private void displayParticle(Entity entity, int damage) {
@@ -85,8 +100,18 @@ public class ClientProxy extends CommonProxy {
   public void setEntityInCrosshairs(float partialTicks) {
     EntityLivingBase hit = getPointedEntity(partialTicks);
     if (hit != null) {
-      entityStatusGUI.setEntity(hit);
+      entityStatusGUI.setEntity(pointedEntity = hit);
     }
+  }
+
+  @Override
+  public float getAccumulatedDamageReference(EntityLivingBase entity) {
+    Pair<Long, Float> pair = AccumulatedDamage.get(entity);
+    long time = System.currentTimeMillis();
+    if (pair == null || time - pair.getLeft() > ConfigurationHandler.hideDelay) {
+      return 0F;
+    }
+    return pair.getRight();
   }
 
   private EntityLivingBase getPointedEntity(float partialTicks) {

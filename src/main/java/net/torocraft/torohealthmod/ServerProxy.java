@@ -26,4 +26,9 @@ public class ServerProxy extends CommonProxy {
   public void setEntityInCrosshairs(float partialTicks) {
     super.setEntityInCrosshairs(partialTicks);
   }
+
+  @Override
+  public float getAccumulatedDamageReference(EntityLivingBase entity) {
+    return super.getAccumulatedDamageReference(entity);
+  }
 }

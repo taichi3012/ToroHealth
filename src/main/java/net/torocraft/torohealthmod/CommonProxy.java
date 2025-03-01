@@ -25,4 +25,8 @@ public class CommonProxy {
   public void setEntityInCrosshairs(float partialTicks) {
 
   }
+
+  public float getAccumulatedDamageReference(EntityLivingBase entity) {
+    return 0F;
+  }
 }

@@ -1,7 +1,7 @@
 package net.torocraft.torohealthmod.gui;
 
+import java.awt.*;
 import java.util.Random;
-
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.ScaledResolution;
@@ -24,7 +24,7 @@ import net.torocraft.torohealthmod.config.ConfigurationHandler;
 public class GuiEntityStatus extends Gui {
 
   private Minecraft mc;
-  private EntityLivingBase entity;
+  public EntityLivingBase entity;
   private long entityUpdatedTime;
   private boolean showHealthBar = false;
 
@@ -220,16 +220,32 @@ public class GuiEntityStatus extends Gui {
 
     Gui.drawModalRectWithCustomSizedTexture(screenX + bgX, screenY + bgY, 0.0f, 0.0f, displayWidth, displayHeight, 200.0f, 200.0f);
 
-    Gui.drawModalRectWithCustomSizedTexture(screenX + healthBarX, screenY + healthBarY, 0.0f, 150.0f, 96, 16, 200.0f, 200.0f);
+    int healthBarLeft = screenX + healthBarX;
+    int healthBarTop = screenY + healthBarY;
+    Gui.drawModalRectWithCustomSizedTexture(healthBarLeft, healthBarTop, 0.0f, 150.0f, 96, 16, 200.0f, 200.0f);
 
     double maxHealth = entity.getEntityAttribute(SharedMonsterAttributes.maxHealth).getBaseValue();
-    int currentHealthWidth = (int) Math.ceil(96 * (entity.getHealth() / maxHealth));
-    Gui.drawModalRectWithCustomSizedTexture(screenX + healthBarX, screenY + healthBarY, 0.0f, 100.0f, currentHealthWidth, 16, 200.0f, 200.0f);
+    int currentHealthRight = (int) Math.ceil(96 * (entity.getHealth() / maxHealth));
+    Gui.drawModalRectWithCustomSizedTexture(healthBarLeft, healthBarTop, 0.0f, 100.0f, currentHealthRight, 16, 200.0f, 200.0f);
+
+    float adr = ToroHealthMod.proxy.getAccumulatedDamageReference(entity);
+    if (adr > entity.getHealth()) {
+      float hue = System.currentTimeMillis() % 2501 / 2500f;
+      int start = Color.HSBtoRGB(hue, 1f, 1f);
+      int end = Color.HSBtoRGB(hue + 0.1f, 1f, 1f);
+      drawGradientRect(healthBarLeft + currentHealthRight, healthBarTop, healthBarLeft + (int) Math.ceil(96 * (adr / maxHealth)), healthBarTop + 16, start, end);
+    }
 
     String name = getDisplayName();
 
     drawCenteredString(mc.fontRendererObj, name, screenX + nameX, screenY + nameY, 0xFFFFFF);
-    drawCenteredString(mc.fontRendererObj, (int) Math.ceil(entity.getHealth()) + "/" + (int) maxHealth, screenX + healthX, screenY + healthY, 0xFFFFFF);
+    String healthText = (int) Math.ceil(entity.getHealth()) + "/" + (int) maxHealth;
+    drawCenteredString(mc.fontRendererObj, healthText, screenX + healthX, screenY + healthY, 0xFFFFFF);
+
+    float accumulatedDamage = adr - entity.getHealth();
+    if (accumulatedDamage > 0f) {
+      drawString(mc.fontRendererObj, "+" + MathHelper.ceiling_float_int(accumulatedDamage), screenX + healthX + mc.fontRendererObj.getStringWidth(healthText) / 2 + 4, screenY + healthY, 0x55FFFF);
+    }
   }
 
   private void drawHeartsDisplay() {
