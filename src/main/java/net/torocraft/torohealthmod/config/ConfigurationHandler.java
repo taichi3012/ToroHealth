@@ -20,6 +20,7 @@ public class ConfigurationHandler {
   public static Integer damageColor;
   public static Integer healColor;
   public static int hideDelay;
+  public static int displayWidth;
 
   private static String[] acceptedColors = new String[]{"RED", "GREEN", "BLUE", "YELLOW", "ORANGE", "WHITE", "BLACK", "PURPLE"};
 
@@ -39,6 +40,7 @@ public class ConfigurationHandler {
       damageColor = mapColor(config.getString("Damage Color", Configuration.CATEGORY_CLIENT, "RED", "Damage Text Color", acceptedColors));
       healColor = mapColor(config.getString("Heal Color", Configuration.CATEGORY_CLIENT, "GREEN", "Heal Text Color", acceptedColors));
       hideDelay = config.getInt("Hide Delay", Configuration.CATEGORY_CLIENT, 400, 50, 5000, "Delays hiding the dialog for the given number of milliseconds");
+      displayWidth = config.getInt("Display Width", Configuration.CATEGORY_CLIENT, 100, 50, 500, "Numeric health bar width.");
     } catch (Exception e) {
       e.printStackTrace();
     } finally {

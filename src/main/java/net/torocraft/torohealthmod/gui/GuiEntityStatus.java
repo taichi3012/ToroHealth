@@ -207,25 +207,26 @@ public class GuiEntityStatus extends Gui {
     ResourceLocation spriteLoc = new ResourceLocation(ToroHealthMod.MODID, "textures/gui/entityStatus.png");
     mc.renderEngine.bindTexture(spriteLoc);
 
+    displayWidth = ConfigurationHandler.displayWidth;
+    displayHeight = 34;
+
     /*
      * defines positions of each element from the top left position of
      * status display
      */
-    int bgX = 0, bgY = 0, healthBarX = 2, healthBarY = 16, nameX = 50, nameY = 4, healthX = 50, healthY = 20;
-
-    displayWidth = 100;
-    displayHeight = 34;
+    int bgX = 0, bgY = 0, healthBarX = 2, healthBarY = 16, nameX = displayWidth / 2, nameY = 4, healthX = displayWidth / 2, healthY = 20;
 
     adjustForDisplayPositionSetting();
 
     Gui.drawModalRectWithCustomSizedTexture(screenX + bgX, screenY + bgY, 0.0f, 0.0f, displayWidth, displayHeight, 200.0f, 200.0f);
 
+    int healthBarWidth = displayWidth - 2 * 2;
     int healthBarLeft = screenX + healthBarX;
     int healthBarTop = screenY + healthBarY;
-    Gui.drawModalRectWithCustomSizedTexture(healthBarLeft, healthBarTop, 0.0f, 150.0f, 96, 16, 200.0f, 200.0f);
+    Gui.drawModalRectWithCustomSizedTexture(healthBarLeft, healthBarTop, 0.0f, 150.0f, healthBarWidth, healthBarY, 200.0f, 200.0f);
 
     double maxHealth = entity.getEntityAttribute(SharedMonsterAttributes.maxHealth).getBaseValue();
-    int currentHealthRight = (int) Math.ceil(96 * (entity.getHealth() / maxHealth));
+    int currentHealthRight = (int) Math.ceil(healthBarWidth * (entity.getHealth() / maxHealth));
     Gui.drawModalRectWithCustomSizedTexture(healthBarLeft, healthBarTop, 0.0f, 100.0f, currentHealthRight, 16, 200.0f, 200.0f);
 
     float adr = ToroHealthMod.proxy.getAccumulatedDamageReference(entity);
@@ -233,7 +234,7 @@ public class GuiEntityStatus extends Gui {
       float hue = System.currentTimeMillis() % 2501 / 2500f;
       int start = Color.HSBtoRGB(hue, 1f, 1f);
       int end = Color.HSBtoRGB(hue + 0.1f, 1f, 1f);
-      drawGradientRect(healthBarLeft + currentHealthRight, healthBarTop, healthBarLeft + (int) Math.ceil(96 * (adr / maxHealth)), healthBarTop + 16, start, end);
+      drawGradientRect(healthBarLeft + currentHealthRight, healthBarTop, healthBarLeft + (int) Math.ceil(healthBarWidth * (adr / maxHealth)), healthBarTop + 16, start, end);
     }
 
     String name = getDisplayName();
