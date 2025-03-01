@@ -107,7 +107,7 @@ public class ClientProxy extends CommonProxy {
     double nearlest = reach;
     EntityLivingBase result = null;
     for (EntityLivingBase entity : this.mc.theWorld.getEntitiesWithinAABB(EntityLivingBase.class, box)) {
-      if (entity == observer) {
+      if (entity == observer || entity == mc.thePlayer.ridingEntity) {
         continue;
       }
 
