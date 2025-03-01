@@ -1,13 +1,11 @@
 package net.torocraft.torohealthmod;
 
+import java.util.Map;
+import java.util.WeakHashMap;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.nbt.NBTTagInt;
-import net.minecraft.util.AxisAlignedBB;
-import net.minecraft.util.BlockPos;
-import net.minecraft.util.MovingObjectPosition;
-import net.minecraft.util.Vec3;
+import net.minecraft.util.*;
 import net.minecraft.world.World;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
@@ -21,6 +19,7 @@ public class ClientProxy extends CommonProxy {
 
   GuiEntityStatus entityStatusGUI;
   private Minecraft mc = Minecraft.getMinecraft();
+  private final Map<EntityLivingBase, Float> healthMap = new WeakHashMap<>();
 
   @Override
   public void preInit(FMLPreInitializationEvent e) {
@@ -41,7 +40,6 @@ public class ClientProxy extends CommonProxy {
 
   @Override
   public void displayDamageDealt(EntityLivingBase entity) {
-
     if (!entity.worldObj.isRemote) {
       return;
     }
@@ -50,17 +48,19 @@ public class ClientProxy extends CommonProxy {
       return;
     }
 
-    int currentHealth = (int) Math.ceil(entity.getHealth());
-
-    if (entity.getEntityData().hasKey("health")) {
-      int entityHealth = ((NBTTagInt) entity.getEntityData().getTag("health")).getInt();
-
-      if (entityHealth != currentHealth) {
-        displayParticle(entity, (int) entityHealth - currentHealth);
-      }
+    float currentHealth = entity.getHealth();
+    if (!healthMap.containsKey(entity)) {
+      healthMap.put(entity, currentHealth);
+      return;
     }
 
-    entity.getEntityData().setTag("health", new NBTTagInt(currentHealth));
+    float prevHealth = healthMap.get(entity);
+    if (currentHealth == prevHealth) {
+      return;
+    }
+
+    displayParticle(entity, MathHelper.ceiling_float_int(prevHealth - currentHealth));
+    healthMap.put(entity, currentHealth);
   }
 
   private void displayParticle(Entity entity, int damage) {
