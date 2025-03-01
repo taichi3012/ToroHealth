@@ -69,10 +69,14 @@ public class ClientProxy extends CommonProxy {
     }
 
     World world = entity.worldObj;
-    double motionX = world.rand.nextGaussian() * 0.02;
-    double motionY = 0.5f;
-    double motionZ = world.rand.nextGaussian() * 0.02;
-    DamageParticle damageIndicator = new DamageParticle(damage, world, entity.posX, entity.posY + entity.height, entity.posZ, motionX, motionY, motionZ);
+    Vec3 vec = new Vec3(0d, 0d, 1d)
+      .rotateYaw(-MathHelper.wrapAngleTo180_float(mc.thePlayer.rotationYaw + 90) * (float) Math.PI / 180);
+    double rand = world.rand.nextGaussian() / 8;
+    double scale = (rand + (rand <= 0 ? -0.2 : 0.2)) * (entity.getDistanceToEntity(mc.thePlayer) * 0.02f + 0.95f);
+    double motionX = vec.xCoord * scale;
+    double motionY = vec.yCoord;
+    double motionZ = vec.zCoord * scale;
+    DamageParticle damageIndicator = new DamageParticle(damage, world, entity.posX, entity.posY + entity.height / 2F + Math.abs(world.rand.nextGaussian()) / 3F, entity.posZ, motionX, motionY, motionZ);
     Minecraft.getMinecraft().effectRenderer.addEffect(damageIndicator);
 
   }

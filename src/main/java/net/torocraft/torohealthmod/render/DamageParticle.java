@@ -1,7 +1,5 @@
 package net.torocraft.torohealthmod.render;
 
-import org.lwjgl.opengl.GL11;
-
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.particle.EntityFX;
@@ -13,28 +11,29 @@ import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import net.torocraft.torohealthmod.config.ConfigurationHandler;
+import org.lwjgl.opengl.GL11;
 
 @SideOnly(Side.CLIENT)
 public class DamageParticle extends EntityFX {
 
-  protected static final float GRAVITY = 0.1F;
-  protected static final float SIZE = 3.0F;
-  protected static final int LIFESPAN = 12;
+  protected static final float GRAVITY = -0.3F;
+  protected static final int LIFESPAN = 18;
   protected static final double BOUNCE_STRENGTH = 1.5F;
 
   protected String text;
   protected boolean shouldOnTop = true;
-  protected boolean grow = true;
   protected float scale = 1.0F;
   private int damage;
 
-  public DamageParticle(int damage, World world, double parX, double parY, double parZ, double parMotionX, double parMotionY, double parMotionZ) {
-    super(world, parX, parY, parZ, parMotionX, parMotionY, parMotionZ);
-    particleTextureJitterX = 0.0F;
-    particleTextureJitterY = 0.0F;
-    particleGravity = GRAVITY;
-    particleScale = SIZE;
-    particleMaxAge = LIFESPAN;
+  public DamageParticle(int damage, World world, double posX, double posY, double posZ, double motionX, double motionY, double motionZ) {
+    super(world, posX, posY, posZ, motionX, motionY, motionZ);
+    this.motionX = motionX;
+    this.motionY = motionY;
+    this.motionZ = motionZ;
+    this.particleTextureJitterX = 0.0F;
+    this.particleTextureJitterY = 0.0F;
+    this.particleGravity = GRAVITY;
+    this.particleMaxAge = LIFESPAN;
     this.damage = damage;
     this.text = Integer.toString(Math.abs(damage));
   }
@@ -52,6 +51,7 @@ public class DamageParticle extends EntityFX {
     final float locY = ((float) (this.prevPosY + (this.posY - this.prevPosY) * partialTicks - interpPosY));
     final float locZ = ((float) (this.prevPosZ + (this.posZ - this.prevPosZ) * partialTicks - interpPosZ));
 
+    float scaleByDistance = MathHelper.sqrt_float(locX * locX + locY * locY + locZ * locZ) * 0.08f + 0.5f;
     GL11.glPushMatrix();
     if (this.shouldOnTop) {
       GL11.glDepthFunc(GL11.GL_ALWAYS);
@@ -63,8 +63,8 @@ public class DamageParticle extends EntityFX {
     GL11.glRotatef(rotationPitch, 1.0F, 0.0F, 0.0F);
 
     GL11.glScalef(-1.0F, -1.0F, 1.0F);
-    GL11.glScaled(this.particleScale * 0.008D, this.particleScale * 0.008D, this.particleScale * 0.008D);
-    GL11.glScaled(this.scale, this.scale, this.scale);
+    GL11.glScalef(0.03F, 0.03F, 0.03F);
+    GL11.glScalef(this.scale * scaleByDistance, this.scale * scaleByDistance, this.scale * scaleByDistance);
 
     OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, 240.0F, 0.003662109F);
     GL11.glEnable(GL11.GL_TEXTURE_2D);
@@ -84,23 +84,29 @@ public class DamageParticle extends EntityFX {
       color = ConfigurationHandler.healColor;
     }
 
+    int alpha = 0xFF000000;
+    if (particleMaxAge - particleAge < 10) {
+      alpha = (int) (251F * ((particleMaxAge - particleAge + 1 - partialTicks) * 0.1F)) + 4;
+      alpha <<= 24;
+    }
+
     final FontRenderer fontRenderer = Minecraft.getMinecraft().fontRendererObj;
-    fontRenderer.drawStringWithShadow(this.text, -MathHelper.floor_float(fontRenderer.getStringWidth(this.text) / 2.0F) + 1, -MathHelper.floor_float(fontRenderer.FONT_HEIGHT / 2.0F) + 1, color);
+    fontRenderer.drawStringWithShadow(this.text, -MathHelper.floor_float(fontRenderer.getStringWidth(this.text) / 2.0F) + 1, -MathHelper.floor_float(fontRenderer.FONT_HEIGHT / 2.0F) + 1, color | alpha);
 
     GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
     GL11.glDepthFunc(GL11.GL_LEQUAL);
 
     GL11.glPopMatrix();
-    if (this.grow) {
-      this.particleScale *= 1.08F;
-      if (this.particleScale > SIZE * 3.0D) {
-        this.grow = false;
-      }
-    } else {
-      this.particleScale *= 0.96F;
-    }
   }
 
+  @Override
+  public void onUpdate() {
+    super.onUpdate();
+    this.motionX *= 0.75d;
+    this.motionZ *= 0.75d;
+  }
+
+  @Override
   public int getFXLayer() {
     return 3;
   }
