@@ -75,11 +75,7 @@ public class ClientProxy extends CommonProxy {
       return;
     }
 
-    if (currentHealth < pair.getRight()) {
-      AccumulatedDamage.put(entity, Pair.of(time, pair.getRight()));
-    } else {
-      AccumulatedDamage.put(entity, Pair.of(time, currentHealth));
-    }
+    AccumulatedDamage.put(entity, Pair.of(time, Math.max(currentHealth, pair.getRight())));
   }
 
   private void displayParticle(Entity entity, int damage) {
