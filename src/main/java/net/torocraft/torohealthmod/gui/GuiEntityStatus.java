@@ -72,6 +72,12 @@ public class GuiEntityStatus extends Gui {
     entity = entityToTrack;
   }
 
+  public void onEntityHurt(EntityLivingBase entity) {
+    if (entity == this.entity && showHealthBar) {
+      entityUpdatedTime = System.currentTimeMillis();
+    }
+  }
+
   @SubscribeEvent
   public void drawHealthBar(RenderGameOverlayEvent.Post event) {
     if (event.type != ElementType.ALL) {

@@ -65,7 +65,7 @@ public class ClientProxy extends CommonProxy {
     displayParticle(entity, MathHelper.ceiling_float_int(prevHealth - currentHealth));
     healthMap.put(entity, currentHealth);
     if (entity == pointedEntity) {
-      entityStatusGUI.setEntity(entity);
+      entityStatusGUI.onEntityHurt(entity);
     }
 
     Pair<Long, Float> pair = AccumulatedDamage.get(entity);
