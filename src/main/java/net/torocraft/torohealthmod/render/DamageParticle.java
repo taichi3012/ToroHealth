@@ -34,6 +34,7 @@ public class DamageParticle extends EntityFX {
     this.particleTextureJitterY = 0.0F;
     this.particleGravity = GRAVITY;
     this.particleMaxAge = LIFESPAN;
+    this.noClip = true;
     this.damage = damage;
     this.text = Integer.toString(Math.abs(damage));
   }
@@ -63,7 +64,7 @@ public class DamageParticle extends EntityFX {
     GL11.glRotatef(rotationPitch, 1.0F, 0.0F, 0.0F);
 
     GL11.glScalef(-1.0F, -1.0F, 1.0F);
-    GL11.glScalef(0.03F, 0.03F, 0.03F);
+    GL11.glScalef(0.04F, 0.04F, 0.04F);
     GL11.glScalef(this.scale * scaleByDistance, this.scale * scaleByDistance, this.scale * scaleByDistance);
 
     OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, 240.0F, 0.003662109F);
