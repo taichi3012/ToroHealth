@@ -27,6 +27,7 @@ public class GuiEntityStatus extends Gui {
   public EntityLivingBase entity;
   private long entityUpdatedTime;
   private boolean showHealthBar = false;
+  private float partialTicks = 1.0F;
 
   private ScaledResolution viewport;
   private final int PADDING_FROM_EDGE = 2;
@@ -101,6 +102,7 @@ public class GuiEntityStatus extends Gui {
 
     viewport = new ScaledResolution(mc);
     displayPosition = ConfigurationHandler.statusDisplayPosition;
+    partialTicks = event.partialTicks;
 
     if (isUnsupportedDisplayType(entityStatusDisplay)) {
       entityStatusDisplay = "HEARTS";
@@ -163,10 +165,13 @@ public class GuiEntityStatus extends Gui {
     }
 
     float prevYawOffset = entity.renderYawOffset;
+    float prevPrevYawOffset = entity.prevRenderYawOffset;
     float prevYaw = entity.rotationYaw;
+    float prevPrevYaw = entity.prevRotationYaw;
     float prevPitch = entity.rotationPitch;
+    float prevPrevPitch = entity.prevRotationPitch;
     float prevYawHead = entity.rotationYawHead;
-    float prevPrevYahHead = entity.prevRotationYawHead;
+    float prevPrevYawHead = entity.prevRotationYawHead;
     GlStateManager.enableColorMaterial();
     GlStateManager.pushMatrix();
     GlStateManager.translate((float) screenX, (float) screenY, 50.0F);
@@ -177,21 +182,27 @@ public class GuiEntityStatus extends Gui {
     GlStateManager.rotate(-100.0F, 0.0F, 1.0F, 0.0F);
     GlStateManager.rotate(0.0f, 1.0F, 0.0F, 0.0F);
     entity.renderYawOffset = 0.0f;
+    entity.prevRenderYawOffset = 0.0f;
     entity.rotationYaw = 0.0f;
+    entity.prevRotationYaw = 0.0f;
     entity.rotationPitch = 0.0f;
+    entity.prevRotationPitch = 0.0f;
     entity.rotationYawHead = 0.0f;
     entity.prevRotationYawHead = 0.0f;
     GlStateManager.translate(0.0F, 0.0F, 0.0F);
     RenderManager rendermanager = Minecraft.getMinecraft().getRenderManager();
     rendermanager.setPlayerViewY(180.0F);
     rendermanager.setRenderShadow(false);
-    rendermanager.doRenderEntity(entity, 0.0D, 0.0D, 0.0D, 0.0F, 1.0F, false);
+    rendermanager.doRenderEntity(entity, 0.0D, 0.0D, 0.0D, 0.0F, partialTicks, false);
     rendermanager.setRenderShadow(true);
     entity.renderYawOffset = prevYawOffset;
+    entity.prevRenderYawOffset = prevPrevYawOffset;
     entity.rotationYaw = prevYaw;
+    entity.prevRotationYaw = prevPrevYaw;
     entity.rotationPitch = prevPitch;
+    entity.prevRotationPitch = prevPrevPitch;
     entity.rotationYawHead = prevYawHead;
-    entity.prevRotationYawHead = prevPrevYahHead;
+    entity.prevRotationYawHead = prevPrevYawHead;
     GlStateManager.popMatrix();
     RenderHelper.disableStandardItemLighting();
     GlStateManager.disableRescaleNormal();
@@ -224,6 +235,7 @@ public class GuiEntityStatus extends Gui {
 
     adjustForDisplayPositionSetting();
 
+    GlStateManager.enableBlend();
     Gui.drawModalRectWithCustomSizedTexture(screenX + bgX, screenY + bgY, 0.0f, 0.0f, displayWidth, displayHeight, 200.0f, 200.0f);
 
     int healthBarWidth = displayWidth - 2 * 2;
@@ -253,6 +265,8 @@ public class GuiEntityStatus extends Gui {
     if (accumulatedDamage > 0f) {
       drawString(mc.fontRendererObj, "+" + MathHelper.ceiling_float_int(accumulatedDamage), screenX + healthX + mc.fontRendererObj.getStringWidth(healthText) / 2 + 4, screenY + healthY, 0x55FFFF);
     }
+
+    GlStateManager.disableBlend();
   }
 
   private void drawHeartsDisplay() {
