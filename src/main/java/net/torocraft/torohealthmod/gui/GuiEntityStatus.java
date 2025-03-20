@@ -258,7 +258,7 @@ public class GuiEntityStatus extends Gui {
     String name = getDisplayName();
 
     drawCenteredString(mc.fontRendererObj, name, screenX + nameX, screenY + nameY, 0xFFFFFF);
-    String healthText = (int) Math.ceil(entity.getHealth()) + "/" + (int) maxHealth;
+    String healthText = (int) Math.ceil(entity.getHealth()) + "/" + (int) Math.ceil(maxHealth);
     drawCenteredString(mc.fontRendererObj, healthText, screenX + healthX, screenY + healthY, 0xFFFFFF);
 
     float accumulatedDamage = adr - entity.getHealth();
